@@ -2,7 +2,6 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Package, DollarSign } from "lucide-react";
 import { Button } from "../ui/button";
-import { motion } from "framer-motion";
 
 interface StatCardProps {
   title: string;
@@ -31,49 +30,42 @@ const StatCard = ({
     : value;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      whileHover={{ scale: 1.02 }}
-    >
-      <Card className="p-6 bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            {icon}
-            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              {title}
-            </h3>
-          </div>
-          {showStockButton && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onUpdateStock}
-              className="hover:scale-105 transition-transform"
-            >
-              Atualizar Estoque
-            </Button>
-          )}
+    <Card className="p-6 bg-white dark:bg-gray-800 shadow-lg transition-shadow duration-300 hover:shadow-xl">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          {icon}
+          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            {title}
+          </h3>
         </div>
-        <div className="mt-4 space-y-1">
+        {showStockButton && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onUpdateStock}
+            className="hover:scale-105 transition-transform"
+          >
+            Atualizar Estoque
+          </Button>
+        )}
+      </div>
+      <div className="mt-4 space-y-1">
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Quantidade:
+          </span>
+          <span className="text-lg font-bold">{displayValue}</span>
+        </div>
+        {typeof stock !== "undefined" && (
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              Quantidade:
+              Estoque:
             </span>
-            <span className="text-lg font-bold">{displayValue}</span>
+            <span className="text-lg font-bold">{stock}</span>
           </div>
-          {typeof stock !== "undefined" && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                Estoque:
-              </span>
-              <span className="text-lg font-bold">{stock}</span>
-            </div>
-          )}
-        </div>
-      </Card>
-    </motion.div>
+        )}
+      </div>
+    </Card>
   );
 };
 
@@ -99,8 +91,8 @@ const DashboardStats = ({
   onUpdateStock,
 }: DashboardStatsProps) => {
   return (
-    <div className="w-full p-6 bg-gray-50 dark:bg-gray-900 rounded-lg">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="w-full p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 rounded-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Argolas"
           value={stats.rings.quantity}

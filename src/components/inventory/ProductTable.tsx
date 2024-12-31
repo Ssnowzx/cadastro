@@ -11,7 +11,6 @@ import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { Product } from "@/lib/types";
-import { motion } from "framer-motion";
 
 interface ProductTableProps {
   products?: Product[];
@@ -38,8 +37,8 @@ export default function ProductTable({
   );
 
   return (
-    <Card className="w-full bg-white dark:bg-gray-800 overflow-hidden">
-      <div className="p-4">
+    <Card className="w-full bg-white dark:bg-gray-800 overflow-hidden shadow-lg">
+      <div className="p-2 sm:p-4 overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="border-b-2 border-gray-200 dark:border-gray-700">
@@ -68,22 +67,15 @@ export default function ProductTable({
           <TableBody>
             {Object.entries(groupedProducts).map(([category, items]) => (
               <React.Fragment key={category}>
-                <motion.tr
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-gray-100 dark:bg-gray-700 border-b"
-                >
+                <TableRow className="bg-gray-100 dark:bg-gray-700 border-b">
                   <TableCell colSpan={isAdmin ? 12 : 11} className="font-bold">
                     {category}
                   </TableCell>
-                </motion.tr>
+                </TableRow>
                 {items.map((product) => (
-                  <motion.tr
+                  <TableRow
                     key={product.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.2 }}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-600 border-b"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-600 border-b transition-colors duration-200"
                   >
                     <TableCell className="border-r">
                       {product.category}
@@ -149,7 +141,7 @@ export default function ProductTable({
                         </div>
                       </TableCell>
                     )}
-                  </motion.tr>
+                  </TableRow>
                 ))}
               </React.Fragment>
             ))}

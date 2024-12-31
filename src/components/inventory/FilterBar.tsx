@@ -19,13 +19,13 @@ const FilterBar = ({
   onCategoryFilter = () => {},
 }: FilterBarProps) => {
   return (
-    <div className="w-full bg-background border-b p-4 flex items-center gap-4 sticky top-0 z-10">
-      <div className="flex-1 flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
+    <div className="w-full bg-background border-b p-2 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 sticky top-0 z-10">
+      <div className="w-full flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="Buscar produtos..."
-            className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary"
+            className="pl-10 w-full transition-all duration-200 focus:ring-2 focus:ring-primary"
             onChange={(e) => onSearch(e.target.value)}
           />
         </div>
