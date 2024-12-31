@@ -86,7 +86,6 @@ export default function Home({ isFormOpen = false }: HomeProps) {
           valor: productData.fields.valor,
         },
         quantity: productData.quantity,
-        stock: productData.quantity,
       };
 
       if (editingProduct) {

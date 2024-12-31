@@ -6,7 +6,12 @@ const generateId = () => Math.random().toString(36).substr(2, 9);
 // Load products from localStorage
 const loadFromStorage = (): Product[] => {
   const stored = localStorage.getItem("products");
-  return stored ? JSON.parse(stored) : [];
+  if (!stored) {
+    // Initialize with empty array if no products exist
+    localStorage.setItem("products", JSON.stringify([]));
+    return [];
+  }
+  return JSON.parse(stored);
 };
 
 // Save products to localStorage
@@ -31,7 +36,6 @@ type NewProduct = {
     valor: number;
   };
   quantity: number;
-  stock: number;
 };
 
 export async function addProduct(product: NewProduct) {
@@ -40,6 +44,7 @@ export async function addProduct(product: NewProduct) {
     ...product,
     id: generateId(),
     created_at: new Date().toISOString(),
+    stock: 0, // Initialize new products with 0 stock
   };
 
   products.push(newProduct);
@@ -54,7 +59,7 @@ export async function updateProduct(product: Product) {
   if (index !== -1) {
     products[index] = product;
     saveToStorage(products);
-    return product;
+    return products[index];
   }
 
   throw new Error("Product not found");
