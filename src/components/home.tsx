@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 import { Plus, Moon, Sun } from "lucide-react";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { useTheme } from "@/lib/theme-provider";
-import { Product } from "@/lib/types";
+import { Product, NewProduct } from "@/lib/types";
 import { Input } from "./ui/input";
 import { StockDialog } from "./inventory/StockDialog";
 import {
@@ -73,7 +73,7 @@ export default function Home({ isFormOpen = false }: HomeProps) {
 
   const handleAddProduct = async (productData: any) => {
     try {
-      const newProduct = {
+      const newProduct: NewProduct = {
         category: productData.category,
         fields: {
           numero: productData.fields.numero || "",
@@ -90,9 +90,9 @@ export default function Home({ isFormOpen = false }: HomeProps) {
 
       if (editingProduct) {
         const updatedProduct = await updateProduct({
+          ...editingProduct,
           ...newProduct,
-          id: editingProduct.id,
-        });
+        } as Product);
         setProducts(
           products.map((p) =>
             p.id === editingProduct.id ? updatedProduct : p,

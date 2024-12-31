@@ -4,10 +4,10 @@ export interface ProductFields {
   numero: string;
   medida: string;
   polegada: string;
-  modelo?: string;
-  grossura?: string;
-  compFuro?: string;
-  furo?: string;
+  modelo: string;
+  grossura: string;
+  compFuro: string;
+  furo: string;
   valor: number;
 }
 
@@ -17,6 +17,24 @@ export interface Product {
   fields: ProductFields;
   quantity: number;
   stock: number;
+  created_at?: string;
+}
+
+export interface NewProductFields {
+  numero?: string;
+  medida?: string;
+  polegada?: string;
+  modelo?: string;
+  grossura?: string;
+  compFuro?: string;
+  furo?: string;
+  valor: number;
+}
+
+export interface NewProduct {
+  category: ProductCategory;
+  fields: NewProductFields;
+  quantity: number;
 }
 
 export const optionsMap = {

@@ -1,4 +1,4 @@
-import { Product, ProductCategory } from "./types";
+import { Product, ProductCategory, NewProduct } from "./types";
 
 // Helper to generate unique IDs
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -23,28 +23,23 @@ export async function fetchProducts() {
   return loadFromStorage();
 }
 
-type NewProduct = {
-  category: ProductCategory;
-  fields: {
-    numero?: string;
-    medida?: string;
-    polegada?: string;
-    modelo?: string;
-    grossura?: string;
-    compFuro?: string;
-    furo?: string;
-    valor: number;
-  };
-  quantity: number;
-};
-
-export async function addProduct(product: NewProduct) {
+export async function addProduct(product: NewProduct): Promise<Product> {
   const products = loadFromStorage();
-  const newProduct = {
+  const newProduct: Product = {
     ...product,
     id: generateId(),
     created_at: new Date().toISOString(),
-    stock: 0, // Initialize new products with 0 stock
+    stock: 0,
+    fields: {
+      numero: product.fields.numero || "",
+      medida: product.fields.medida || "",
+      polegada: product.fields.polegada || "",
+      modelo: product.fields.modelo || "",
+      grossura: product.fields.grossura || "",
+      compFuro: product.fields.compFuro || "",
+      furo: product.fields.furo || "",
+      valor: product.fields.valor,
+    },
   };
 
   products.push(newProduct);
@@ -52,12 +47,24 @@ export async function addProduct(product: NewProduct) {
   return newProduct;
 }
 
-export async function updateProduct(product: Product) {
+export async function updateProduct(product: Product): Promise<Product> {
   const products = loadFromStorage();
   const index = products.findIndex((p) => p.id === product.id);
 
   if (index !== -1) {
-    products[index] = product;
+    products[index] = {
+      ...product,
+      fields: {
+        numero: product.fields.numero || "",
+        medida: product.fields.medida || "",
+        polegada: product.fields.polegada || "",
+        modelo: product.fields.modelo || "",
+        grossura: product.fields.grossura || "",
+        compFuro: product.fields.compFuro || "",
+        furo: product.fields.furo || "",
+        valor: product.fields.valor,
+      },
+    };
     saveToStorage(products);
     return products[index];
   }
