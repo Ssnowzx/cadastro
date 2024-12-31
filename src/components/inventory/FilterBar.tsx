@@ -1,7 +1,6 @@
 import React from "react";
-import { Search, Filter, X } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "../ui/input";
-import { Button } from "../ui/button";
 import {
   Select,
   SelectContent,
@@ -13,13 +12,11 @@ import {
 interface FilterBarProps {
   onSearch?: (term: string) => void;
   onCategoryFilter?: (category: string) => void;
-  onClear?: () => void;
 }
 
 const FilterBar = ({
   onSearch = () => {},
   onCategoryFilter = () => {},
-  onClear = () => {},
 }: FilterBarProps) => {
   return (
     <div className="w-full bg-background border-b p-4 flex items-center gap-4 sticky top-0 z-10">
@@ -28,7 +25,7 @@ const FilterBar = ({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="Buscar produtos..."
-            className="pl-10"
+            className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary"
             onChange={(e) => onSearch(e.target.value)}
           />
         </div>
@@ -44,21 +41,6 @@ const FilterBar = ({
             <SelectItem value="bombinhas">Bombinhas</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={onClear}
-          title="Limpar filtros"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-        <Button variant="default" className="gap-2">
-          <Filter className="h-4 w-4" />
-          Filtros
-        </Button>
       </div>
     </div>
   );

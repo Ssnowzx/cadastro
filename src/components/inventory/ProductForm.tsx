@@ -38,7 +38,6 @@ const ProductForm = ({
     furo: "",
     valor: "",
     quantidade: "",
-    stock: "",
   });
 
   useEffect(() => {
@@ -54,7 +53,6 @@ const ProductForm = ({
         furo: initialData.fields.furo || "",
         valor: initialData.fields.valor.toString(),
         quantidade: initialData.quantity.toString(),
-        stock: initialData.stock?.toString() || "0",
       });
     }
   }, [initialData]);
@@ -65,7 +63,6 @@ const ProductForm = ({
     const requiredFields = {
       valor: "Valor Unitário",
       quantidade: "Quantidade",
-      stock: "Estoque",
     };
 
     if (category !== "Bombinhas") {
@@ -101,10 +98,23 @@ const ProductForm = ({
     e.preventDefault();
     if (!validateFields()) return;
 
-    onSubmit({
+    const productData = {
       category,
-      ...fields,
-    });
+      fields: {
+        numero: fields.numero,
+        medida: fields.medida,
+        polegada: fields.polegada,
+        modelo: fields.modelo,
+        grossura: fields.grossura,
+        compFuro: fields.compFuro,
+        furo: fields.furo,
+        valor: parseFloat(fields.valor),
+      },
+      quantity: parseInt(fields.quantidade),
+      stock: parseInt(fields.quantidade), // Set stock equal to quantidade on first add
+    };
+
+    onSubmit(productData);
   };
 
   const handleChange = (field: string, value: string) => {
@@ -112,187 +122,175 @@ const ProductForm = ({
   };
 
   return (
-    <Card className="w-full max-w-[400px] p-4 bg-white dark:bg-gray-800">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-3 gap-3">
-          <div className="col-span-3">
-            <Label htmlFor="category">Categoria</Label>
-            <Select
-              value={category}
-              onValueChange={(value: ProductCategory) => setCategory(value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Argolas">Argolas</SelectItem>
-                <SelectItem value="Fivelas">Fivelas</SelectItem>
-                <SelectItem value="Bombinhas">Bombinhas</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {category !== "Bombinhas" && (
-            <>
-              <div>
-                <Label htmlFor="numero">Número</Label>
-                <Select
-                  value={fields.numero}
-                  onValueChange={(v) => handleChange("numero", v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {optionsMap[category].numero.map((num) => (
-                      <SelectItem key={num} value={num}>
-                        {num}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="medida">Medida</Label>
-                <Select
-                  value={fields.medida}
-                  onValueChange={(v) => handleChange("medida", v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {optionsMap[category].medida.map((med) => (
-                      <SelectItem key={med} value={med}>
-                        {med}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="polegada">Polegada</Label>
-                <Select
-                  value={fields.polegada}
-                  onValueChange={(v) => handleChange("polegada", v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {optionsMap[category].polegada.map((pol) => (
-                      <SelectItem key={pol} value={pol}>
-                        {pol}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="modelo">Modelo</Label>
-                <Select
-                  value={fields.modelo}
-                  onValueChange={(v) => handleChange("modelo", v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {optionsMap[category].modelo.map((mod) => (
-                      <SelectItem key={mod} value={mod}>
-                        {mod}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="grossura">Espessura</Label>
-                <Input
-                  id="grossura"
-                  value={fields.grossura}
-                  onChange={(e) => handleChange("grossura", e.target.value)}
-                />
-              </div>
-            </>
-          )}
-
-          {category === "Bombinhas" && (
-            <>
-              <div>
-                <Label htmlFor="compFuro">Comp. Furo</Label>
-                <Select
-                  value={fields.compFuro}
-                  onValueChange={(v) => handleChange("compFuro", v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {optionsMap.Bombinhas.compFuro.map((comp) => (
-                      <SelectItem key={comp} value={comp}>
-                        {comp}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="furo">Furo</Label>
-                <Input
-                  id="furo"
-                  value={fields.furo}
-                  onChange={(e) => handleChange("furo", e.target.value)}
-                />
-              </div>
-            </>
-          )}
-
-          <div>
-            <Label htmlFor="valor">Valor Unit.</Label>
-            <Input
-              id="valor"
-              type="number"
-              step="0.01"
-              value={fields.valor}
-              onChange={(e) => handleChange("valor", e.target.value)}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="quantidade">Qtd.</Label>
-            <Input
-              id="quantidade"
-              type="number"
-              value={fields.quantidade}
-              onChange={(e) => handleChange("quantidade", e.target.value)}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="stock">Estoque</Label>
-            <Input
-              id="stock"
-              type="number"
-              value={fields.stock}
-              onChange={(e) => handleChange("stock", e.target.value)}
-            />
-          </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-3 gap-3">
+        <div className="col-span-3">
+          <Label htmlFor="category">Categoria</Label>
+          <Select
+            value={category}
+            onValueChange={(value: ProductCategory) => setCategory(value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Argolas">Argolas</SelectItem>
+              <SelectItem value="Fivelas">Fivelas</SelectItem>
+              <SelectItem value="Bombinhas">Bombinhas</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className="flex justify-end space-x-2 pt-2">
-          <Button variant="outline" type="button" onClick={onCancel}>
-            Cancelar
-          </Button>
-          <Button type="submit">{initialData ? "Atualizar" : "Salvar"}</Button>
+        {category !== "Bombinhas" && (
+          <>
+            <div>
+              <Label htmlFor="numero">Número</Label>
+              <Select
+                value={fields.numero}
+                onValueChange={(v) => handleChange("numero", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {optionsMap[category].numero.map((num) => (
+                    <SelectItem key={num} value={num}>
+                      {num}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="medida">Medida</Label>
+              <Select
+                value={fields.medida}
+                onValueChange={(v) => handleChange("medida", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {optionsMap[category].medida.map((med) => (
+                    <SelectItem key={med} value={med}>
+                      {med}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="polegada">Polegada</Label>
+              <Select
+                value={fields.polegada}
+                onValueChange={(v) => handleChange("polegada", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {optionsMap[category].polegada.map((pol) => (
+                    <SelectItem key={pol} value={pol}>
+                      {pol}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="modelo">Modelo</Label>
+              <Select
+                value={fields.modelo}
+                onValueChange={(v) => handleChange("modelo", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {optionsMap[category].modelo.map((mod) => (
+                    <SelectItem key={mod} value={mod}>
+                      {mod}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="grossura">Espessura</Label>
+              <Input
+                id="grossura"
+                value={fields.grossura}
+                onChange={(e) => handleChange("grossura", e.target.value)}
+              />
+            </div>
+          </>
+        )}
+
+        {category === "Bombinhas" && (
+          <>
+            <div>
+              <Label htmlFor="compFuro">Comp. Furo</Label>
+              <Select
+                value={fields.compFuro}
+                onValueChange={(v) => handleChange("compFuro", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {optionsMap.Bombinhas.compFuro.map((comp) => (
+                    <SelectItem key={comp} value={comp}>
+                      {comp}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="furo">Furo</Label>
+              <Input
+                id="furo"
+                value={fields.furo}
+                onChange={(e) => handleChange("furo", e.target.value)}
+              />
+            </div>
+          </>
+        )}
+
+        <div>
+          <Label htmlFor="valor">Valor Unit.</Label>
+          <Input
+            id="valor"
+            type="number"
+            step="0.01"
+            value={fields.valor}
+            onChange={(e) => handleChange("valor", e.target.value)}
+          />
         </div>
-      </form>
-    </Card>
+
+        <div>
+          <Label htmlFor="quantidade">Qtd.</Label>
+          <Input
+            id="quantidade"
+            type="number"
+            value={fields.quantidade}
+            onChange={(e) => handleChange("quantidade", e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-2 pt-2">
+        <Button variant="outline" type="button" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button type="submit">{initialData ? "Atualizar" : "Salvar"}</Button>
+      </div>
+    </form>
   );
 };
 

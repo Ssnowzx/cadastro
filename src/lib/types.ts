@@ -16,7 +16,7 @@ export interface Product {
   category: ProductCategory;
   fields: ProductFields;
   quantity: number;
-  stock?: number;
+  stock: number;
 }
 
 export const optionsMap = {
@@ -37,7 +37,7 @@ export const optionsMap = {
     modelo: ["Redonda", "Chata"],
   },
   Fivelas: {
-    numero: ["15x33", "20x33", "25x41", "30x43", "35x53", "40x54"],
+    numero: ["15", "20", "25", "30", "35", "40"],
     medida: ["15x33", "20x33", "25x41", "30x43", "35x53", "40x54"],
     polegada: ["3/16", "1/4", "5/16"],
     modelo: ["Redonda", "Chata"],

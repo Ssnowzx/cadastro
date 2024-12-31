@@ -1,17 +1,21 @@
-import { supabase } from "./supabase";
 import { Product, ProductCategory } from "./types";
 
-export async function fetchProducts() {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .order("created_at", { ascending: false });
+// Helper to generate unique IDs
+const generateId = () => Math.random().toString(36).substr(2, 9);
 
-  if (error) {
-    console.error("Error fetching products:", error);
-    throw error;
-  }
-  return data as Product[];
+// Load products from localStorage
+const loadFromStorage = (): Product[] => {
+  const stored = localStorage.getItem("products");
+  return stored ? JSON.parse(stored) : [];
+};
+
+// Save products to localStorage
+const saveToStorage = (products: Product[]) => {
+  localStorage.setItem("products", JSON.stringify(products));
+};
+
+export async function fetchProducts() {
+  return loadFromStorage();
 }
 
 type NewProduct = {
@@ -31,72 +35,33 @@ type NewProduct = {
 };
 
 export async function addProduct(product: NewProduct) {
-  console.log("Adding product:", product);
+  const products = loadFromStorage();
+  const newProduct = {
+    ...product,
+    id: generateId(),
+    created_at: new Date().toISOString(),
+  };
 
-  try {
-    const { data, error } = await supabase
-      .from("products")
-      .insert([
-        {
-          category: product.category,
-          fields: product.fields,
-          quantity: product.quantity,
-          stock: product.stock || 0,
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error adding product:", error);
-      throw error;
-    }
-
-    return data as Product;
-  } catch (error) {
-    console.error("Error in addProduct:", error);
-    throw error;
-  }
+  products.push(newProduct);
+  saveToStorage(products);
+  return newProduct;
 }
 
 export async function updateProduct(product: Product) {
-  console.log("Updating product:", product);
+  const products = loadFromStorage();
+  const index = products.findIndex((p) => p.id === product.id);
 
-  try {
-    const { data, error } = await supabase
-      .from("products")
-      .update({
-        category: product.category,
-        fields: product.fields,
-        quantity: product.quantity,
-        stock: product.stock || 0,
-      })
-      .eq("id", product.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error updating product:", error);
-      throw error;
-    }
-
-    return data as Product;
-  } catch (error) {
-    console.error("Error in updateProduct:", error);
-    throw error;
+  if (index !== -1) {
+    products[index] = product;
+    saveToStorage(products);
+    return product;
   }
+
+  throw new Error("Product not found");
 }
 
 export async function deleteProduct(id: string) {
-  try {
-    const { error } = await supabase.from("products").delete().eq("id", id);
-
-    if (error) {
-      console.error("Error deleting product:", error);
-      throw error;
-    }
-  } catch (error) {
-    console.error("Error in deleteProduct:", error);
-    throw error;
-  }
+  const products = loadFromStorage();
+  const filtered = products.filter((p) => p.id !== id);
+  saveToStorage(filtered);
 }

@@ -5,10 +5,11 @@ import ProductForm from "./inventory/ProductForm";
 import FilterBar from "./inventory/FilterBar";
 import { Button } from "./ui/button";
 import { Plus, Moon, Sun } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
+import { Dialog, DialogContent } from "./ui/dialog";
 import { useTheme } from "@/lib/theme-provider";
 import { Product } from "@/lib/types";
 import { Input } from "./ui/input";
+import { StockDialog } from "./inventory/StockDialog";
 import {
   fetchProducts,
   addProduct,
@@ -33,6 +34,8 @@ export default function Home({ isFormOpen = false }: HomeProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedProductForStock, setSelectedProductForStock] =
+    useState<Product | null>(null);
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -43,6 +46,7 @@ export default function Home({ isFormOpen = false }: HomeProps) {
     try {
       const data = await fetchProducts();
       setProducts(data);
+      setFilteredProducts(data);
     } catch (error) {
       console.error("Error loading products:", error);
       toast({
@@ -72,20 +76,18 @@ export default function Home({ isFormOpen = false }: HomeProps) {
       const newProduct = {
         category: productData.category,
         fields: {
-          numero: productData.numero || "",
-          medida: productData.medida || "",
-          polegada: productData.polegada || "",
-          modelo: productData.modelo || "",
-          grossura: productData.grossura || "",
-          compFuro: productData.compFuro || "",
-          furo: productData.furo || "",
-          valor: parseFloat(productData.valor),
+          numero: productData.fields.numero || "",
+          medida: productData.fields.medida || "",
+          polegada: productData.fields.polegada || "",
+          modelo: productData.fields.modelo || "",
+          grossura: productData.fields.grossura || "",
+          compFuro: productData.fields.compFuro || "",
+          furo: productData.fields.furo || "",
+          valor: productData.fields.valor,
         },
-        quantity: parseInt(productData.quantidade),
-        stock: parseInt(productData.stock || "0"),
+        quantity: productData.quantity,
+        stock: productData.quantity,
       };
-
-      console.log("Prepared product data:", newProduct);
 
       if (editingProduct) {
         const updatedProduct = await updateProduct({
@@ -112,6 +114,7 @@ export default function Home({ isFormOpen = false }: HomeProps) {
 
       setEditingProduct(null);
       setIsFormDialogOpen(false);
+      await loadProducts();
     } catch (error) {
       console.error("Error saving product:", error);
       toast({
@@ -135,6 +138,7 @@ export default function Home({ isFormOpen = false }: HomeProps) {
         title: "Sucesso",
         description: "Produto excluído com sucesso",
       });
+      await loadProducts();
     } catch (error) {
       console.error("Error deleting product:", error);
       toast({
@@ -142,6 +146,37 @@ export default function Home({ isFormOpen = false }: HomeProps) {
         title: "Erro",
         description: "Erro ao excluir produto",
       });
+    }
+  };
+
+  const handleUpdateStock = async (product: Product, newStock: number) => {
+    try {
+      const updatedProduct = await updateProduct({
+        ...product,
+        stock: newStock,
+      });
+      setProducts(
+        products.map((p) => (p.id === product.id ? updatedProduct : p)),
+      );
+      toast({
+        title: "Sucesso",
+        description: "Estoque atualizado com sucesso",
+      });
+      await loadProducts();
+    } catch (error) {
+      console.error("Error updating stock:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Erro ao atualizar estoque",
+      });
+    }
+  };
+
+  const handleCategoryStockUpdate = (category: string) => {
+    const product = products.find((p) => p.category === category);
+    if (product) {
+      setSelectedProductForStock(product);
     }
   };
 
@@ -177,13 +212,6 @@ export default function Home({ isFormOpen = false }: HomeProps) {
     setFilteredProducts(filtered);
   };
 
-  const clearFilters = () => {
-    setSearchTerm("");
-    setSelectedCategory("all");
-    setFilteredProducts([]);
-  };
-
-  // Calculate stats
   const stats = {
     rings: {
       quantity: products
@@ -228,6 +256,7 @@ export default function Home({ isFormOpen = false }: HomeProps) {
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="hover:scale-110 transition-transform"
           >
             {theme === "dark" ? (
               <Sun className="h-5 w-5" />
@@ -237,7 +266,12 @@ export default function Home({ isFormOpen = false }: HomeProps) {
           </Button>
 
           {!isAdmin && !showLoginForm && (
-            <Button onClick={() => setShowLoginForm(true)}>Login Admin</Button>
+            <Button
+              onClick={() => setShowLoginForm(true)}
+              className="hover:scale-105 transition-transform"
+            >
+              Login Admin
+            </Button>
           )}
 
           {showLoginForm && (
@@ -247,8 +281,14 @@ export default function Home({ isFormOpen = false }: HomeProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Senha"
+                className="transition-all duration-200 focus:ring-2 focus:ring-primary"
               />
-              <Button onClick={handleLogin}>Entrar</Button>
+              <Button
+                onClick={handleLogin}
+                className="hover:scale-105 transition-transform"
+              >
+                Entrar
+              </Button>
             </div>
           )}
 
@@ -258,13 +298,14 @@ export default function Home({ isFormOpen = false }: HomeProps) {
                 open={isFormDialogOpen}
                 onOpenChange={setIsFormDialogOpen}
               >
-                <DialogTrigger asChild>
-                  <Button className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Novo Produto
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-[400px] p-0">
+                <Button
+                  className="gap-2 hover:scale-105 transition-transform"
+                  onClick={() => setIsFormDialogOpen(true)}
+                >
+                  <Plus className="h-4 w-4" />
+                  Novo Produto
+                </Button>
+                <DialogContent>
                   <ProductForm
                     onSubmit={handleAddProduct}
                     onCancel={() => {
@@ -275,7 +316,11 @@ export default function Home({ isFormOpen = false }: HomeProps) {
                   />
                 </DialogContent>
               </Dialog>
-              <Button variant="outline" onClick={handleLogout}>
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="hover:scale-105 transition-transform"
+              >
                 Sair
               </Button>
             </>
@@ -283,13 +328,16 @@ export default function Home({ isFormOpen = false }: HomeProps) {
         </div>
       </div>
 
-      <DashboardStats stats={stats} />
+      <DashboardStats
+        stats={stats}
+        isAdmin={isAdmin}
+        onUpdateStock={handleCategoryStockUpdate}
+      />
 
       <div className="space-y-4">
         <FilterBar
           onSearch={handleSearch}
           onCategoryFilter={handleCategoryFilter}
-          onClear={clearFilters}
         />
         <ProductTable
           products={filteredProducts.length > 0 ? filteredProducts : products}
@@ -298,6 +346,15 @@ export default function Home({ isFormOpen = false }: HomeProps) {
           onDelete={handleDeleteProduct}
         />
       </div>
+
+      {selectedProductForStock && (
+        <StockDialog
+          product={selectedProductForStock}
+          isOpen={!!selectedProductForStock}
+          onClose={() => setSelectedProductForStock(null)}
+          onUpdate={handleUpdateStock}
+        />
+      )}
     </div>
   );
 }

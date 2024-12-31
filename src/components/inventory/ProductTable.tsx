@@ -11,7 +11,7 @@ import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { Product } from "@/lib/types";
-import { Separator } from "../ui/separator";
+import { motion } from "framer-motion";
 
 interface ProductTableProps {
   products?: Product[];
@@ -38,138 +38,124 @@ export default function ProductTable({
   );
 
   return (
-    <Card className="w-full h-[600px] overflow-auto bg-white dark:bg-gray-800 p-6">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-b-2 border-gray-200 dark:border-gray-700">
-            <TableHead className="border-r border-gray-200 dark:border-gray-600">
-              Categoria
-            </TableHead>
-            <TableHead className="border-r border-gray-200 dark:border-gray-600">
-              Número
-            </TableHead>
-            <TableHead className="border-r border-gray-200 dark:border-gray-600">
-              Medida
-            </TableHead>
-            <TableHead className="border-r border-gray-200 dark:border-gray-600">
-              Polegada
-            </TableHead>
-            <TableHead className="border-r border-gray-200 dark:border-gray-600">
-              Modelo
-            </TableHead>
-            <TableHead className="border-r border-gray-200 dark:border-gray-600">
-              Espessura
-            </TableHead>
-            <TableHead className="border-r border-gray-200 dark:border-gray-600">
-              Comp. Furo
-            </TableHead>
-            <TableHead className="border-r border-gray-200 dark:border-gray-600">
-              Furo
-            </TableHead>
-            <TableHead className="text-right border-r border-gray-200 dark:border-gray-600">
-              Valor Unit.
-            </TableHead>
-            <TableHead className="text-right border-r border-gray-200 dark:border-gray-600">
-              Quantidade
-            </TableHead>
-            <TableHead className="text-right border-r border-gray-200 dark:border-gray-600">
-              Estoque
-            </TableHead>
-            <TableHead className="text-right border-r border-gray-200 dark:border-gray-600">
-              Valor Total
-            </TableHead>
-            {isAdmin && <TableHead className="text-right">Ações</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Object.entries(groupedProducts).map(([category, items], index) => (
-            <React.Fragment key={category}>
-              <TableRow className="bg-gray-100 dark:bg-gray-700 border-t-2 border-gray-300 dark:border-gray-600">
-                <TableCell colSpan={isAdmin ? 13 : 12} className="font-bold">
-                  {category}
-                </TableCell>
-              </TableRow>
-              {items.map((product) => (
-                <TableRow
-                  key={product.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-600 border-b border-gray-200 dark:border-gray-700"
+    <Card className="w-full bg-white dark:bg-gray-800 overflow-hidden">
+      <div className="p-4">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b-2 border-gray-200 dark:border-gray-700">
+              <TableHead className="w-[100px] border-r">Categoria</TableHead>
+              <TableHead className="w-[80px] border-r">Número</TableHead>
+              <TableHead className="w-[80px] border-r">Medida</TableHead>
+              <TableHead className="w-[80px] border-r">Polegada</TableHead>
+              <TableHead className="w-[100px] border-r">Modelo</TableHead>
+              <TableHead className="w-[80px] border-r">Espessura</TableHead>
+              <TableHead className="w-[80px] border-r">Comp. Furo</TableHead>
+              <TableHead className="w-[60px] border-r">Furo</TableHead>
+              <TableHead className="text-right w-[100px] border-r">
+                Valor Unit.
+              </TableHead>
+              <TableHead className="text-right w-[80px] border-r">
+                Qtd.
+              </TableHead>
+              <TableHead className="text-right w-[100px] border-r">
+                Valor Total
+              </TableHead>
+              {isAdmin && (
+                <TableHead className="text-right w-[100px]">Ações</TableHead>
+              )}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Object.entries(groupedProducts).map(([category, items]) => (
+              <React.Fragment key={category}>
+                <motion.tr
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gray-100 dark:bg-gray-700 border-b"
                 >
-                  <TableCell className="border-r border-gray-200 dark:border-gray-600">
-                    {product.category}
+                  <TableCell colSpan={isAdmin ? 12 : 11} className="font-bold">
+                    {category}
                   </TableCell>
-                  <TableCell className="border-r border-gray-200 dark:border-gray-600">
-                    {product.fields.numero}
-                  </TableCell>
-                  <TableCell className="border-r border-gray-200 dark:border-gray-600">
-                    {product.fields.medida}
-                  </TableCell>
-                  <TableCell className="border-r border-gray-200 dark:border-gray-600">
-                    {product.fields.polegada}
-                  </TableCell>
-                  <TableCell className="border-r border-gray-200 dark:border-gray-600">
-                    {product.fields.modelo || "-"}
-                  </TableCell>
-                  <TableCell className="border-r border-gray-200 dark:border-gray-600">
-                    {product.fields.grossura || "-"}
-                  </TableCell>
-                  <TableCell className="border-r border-gray-200 dark:border-gray-600">
-                    {product.fields.compFuro || "-"}
-                  </TableCell>
-                  <TableCell className="border-r border-gray-200 dark:border-gray-600">
-                    {product.fields.furo || "-"}
-                  </TableCell>
-                  <TableCell className="text-right border-r border-gray-200 dark:border-gray-600">
-                    {product.fields.valor.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </TableCell>
-                  <TableCell className="text-right border-r border-gray-200 dark:border-gray-600">
-                    {product.quantity}
-                  </TableCell>
-                  <TableCell className="text-right border-r border-gray-200 dark:border-gray-600">
-                    {product.stock || 0}
-                  </TableCell>
-                  <TableCell className="text-right border-r border-gray-200 dark:border-gray-600">
-                    {(product.fields.valor * product.quantity).toLocaleString(
-                      "pt-BR",
-                      {
+                </motion.tr>
+                {items.map((product) => (
+                  <motion.tr
+                    key={product.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-600 border-b"
+                  >
+                    <TableCell className="border-r">
+                      {product.category}
+                    </TableCell>
+                    <TableCell className="border-r">
+                      {product.fields.numero || "---"}
+                    </TableCell>
+                    <TableCell className="border-r">
+                      {product.fields.medida || "---"}
+                    </TableCell>
+                    <TableCell className="border-r">
+                      {product.fields.polegada || "---"}
+                    </TableCell>
+                    <TableCell className="border-r">
+                      {product.fields.modelo || "---"}
+                    </TableCell>
+                    <TableCell className="border-r">
+                      {product.fields.grossura || "---"}
+                    </TableCell>
+                    <TableCell className="border-r">
+                      {product.fields.compFuro || "---"}
+                    </TableCell>
+                    <TableCell className="border-r">
+                      {product.fields.furo || "---"}
+                    </TableCell>
+                    <TableCell className="text-right border-r">
+                      {product.fields.valor.toLocaleString("pt-BR", {
                         style: "currency",
                         currency: "BRL",
-                      },
-                    )}
-                  </TableCell>
-                  {isAdmin && (
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onEdit?.(product)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onDelete?.(product)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      })}
                     </TableCell>
-                  )}
-                </TableRow>
-              ))}
-              <TableRow>
-                <TableCell colSpan={isAdmin ? 13 : 12}>
-                  <Separator className="my-2" />
-                </TableCell>
-              </TableRow>
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
+                    <TableCell className="text-right border-r">
+                      {product.quantity}
+                    </TableCell>
+                    <TableCell className="text-right border-r">
+                      {(product.fields.valor * product.quantity).toLocaleString(
+                        "pt-BR",
+                        {
+                          style: "currency",
+                          currency: "BRL",
+                        },
+                      )}
+                    </TableCell>
+                    {isAdmin && (
+                      <TableCell>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onEdit?.(product)}
+                            className="hover:scale-110 transition-transform duration-200"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onDelete?.(product)}
+                            className="hover:scale-110 hover:text-destructive transition-all duration-200"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
+                  </motion.tr>
+                ))}
+              </React.Fragment>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </Card>
   );
 }
