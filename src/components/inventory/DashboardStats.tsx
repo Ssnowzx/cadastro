@@ -2,6 +2,12 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Package, DollarSign, AlertTriangle } from "lucide-react";
 import { Button } from "../ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 interface StatCardProps {
   title: string;
@@ -67,10 +73,16 @@ const StatCard = ({
               <div className="flex items-center gap-2">
                 <span className="text-lg font-bold">{stock}</span>
                 {stock === 0 && (
-                  <AlertTriangle
-                    className="h-5 w-5 text-red-500"
-                    title="Estoque zerado"
-                  />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Estoque zerado</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
             </div>
