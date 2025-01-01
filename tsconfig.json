@@ -6,15 +6,14 @@
     "module": "ESNext",
     "skipLibCheck": true,
     "noEmitOnError": false,
-
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-
     "strict": false,
+    "noImplicitAny": false,
     "paths": {
       "@/*": ["./src/*"]
     }
