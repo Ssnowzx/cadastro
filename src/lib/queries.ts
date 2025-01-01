@@ -26,10 +26,8 @@ export async function fetchProducts() {
 export async function addProduct(product: NewProduct): Promise<Product> {
   const products = loadFromStorage();
   const newProduct: Product = {
-    ...product,
     id: generateId(),
-    created_at: new Date().toISOString(),
-    stock: 0,
+    category: product.category,
     fields: {
       numero: product.fields.numero || "",
       medida: product.fields.medida || "",
@@ -40,6 +38,9 @@ export async function addProduct(product: NewProduct): Promise<Product> {
       furo: product.fields.furo || "",
       valor: product.fields.valor,
     },
+    quantity: product.quantity,
+    stock: 0,
+    created_at: new Date().toISOString(),
   };
 
   products.push(newProduct);
@@ -52,7 +53,7 @@ export async function updateProduct(product: Product): Promise<Product> {
   const index = products.findIndex((p) => p.id === product.id);
 
   if (index !== -1) {
-    products[index] = {
+    const updatedProduct: Product = {
       ...product,
       fields: {
         numero: product.fields.numero || "",
@@ -64,9 +65,11 @@ export async function updateProduct(product: Product): Promise<Product> {
         furo: product.fields.furo || "",
         valor: product.fields.valor,
       },
+      stock: typeof product.stock === "number" ? product.stock : 0,
     };
+    products[index] = updatedProduct;
     saveToStorage(products);
-    return products[index];
+    return updatedProduct;
   }
 
   throw new Error("Product not found");

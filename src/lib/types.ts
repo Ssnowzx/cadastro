@@ -21,13 +21,13 @@ export interface Product {
 }
 
 export interface NewProductFields {
-  numero?: string;
-  medida?: string;
-  polegada?: string;
-  modelo?: string;
-  grossura?: string;
-  compFuro?: string;
-  furo?: string;
+  numero: string;
+  medida: string;
+  polegada: string;
+  modelo: string;
+  grossura: string;
+  compFuro: string;
+  furo: string;
   valor: number;
 }
 

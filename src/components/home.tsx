@@ -91,8 +91,10 @@ export default function Home({ isFormOpen = false }: HomeProps) {
       if (editingProduct) {
         const updatedProduct = await updateProduct({
           ...editingProduct,
-          ...newProduct,
-        } as Product);
+          category: newProduct.category,
+          fields: newProduct.fields,
+          quantity: newProduct.quantity,
+        });
         setProducts(
           products.map((p) =>
             p.id === editingProduct.id ? updatedProduct : p,
