@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import DashboardStats from "./inventory/DashboardStats";
 import ProductTable from "./inventory/ProductTable";
 import ProductForm from "./inventory/ProductForm";
@@ -96,13 +96,24 @@ export default function Home({ isFormOpen = false }: HomeProps) {
       if (currentStock < productData.quantity) {
         toast({
           variant: "destructive",
-          title: "Erro",
-          description: `Estoque insuficiente para categoria ${productData.category}. Estoque atual: ${currentStock}`,
+          title: "Estoque Insuficiente",
+          description: `Não é possível adicionar ${productData.quantity} unidades pois o estoque atual é de ${currentStock} unidades para a categoria ${productData.category}.`,
         });
         return;
       }
 
       if (editingProduct) {
+        // Calculate stock difference for editing
+        const stockDifference = productData.quantity - editingProduct.quantity;
+        if (currentStock < stockDifference) {
+          toast({
+            variant: "destructive",
+            title: "Estoque Insuficiente",
+            description: `Não é possível aumentar a quantidade em ${stockDifference} unidades pois o estoque atual é de ${currentStock} unidades.`,
+          });
+          return;
+        }
+
         const updatedProduct = await updateProduct({
           ...editingProduct,
           category: productData.category,
@@ -170,6 +181,13 @@ export default function Home({ isFormOpen = false }: HomeProps) {
     newStock: number,
   ) => {
     try {
+      const currentQuantity = categoryQuantities[category] || 0;
+      if (newStock < currentQuantity) {
+        throw new Error(
+          `O estoque não pode ser menor que a quantidade total de produtos (${currentQuantity})`,
+        );
+      }
+
       await updateCategoryStock(category, newStock);
       await loadInitialData();
       toast({
@@ -181,7 +199,8 @@ export default function Home({ isFormOpen = false }: HomeProps) {
       toast({
         variant: "destructive",
         title: "Erro",
-        description: "Erro ao atualizar estoque",
+        description:
+          error instanceof Error ? error.message : "Erro ao atualizar estoque",
       });
     }
   };
@@ -221,6 +240,21 @@ export default function Home({ isFormOpen = false }: HomeProps) {
 
     setFilteredProducts(filtered);
   };
+
+  const categoryQuantities = useMemo(
+    () => ({
+      Argolas: products
+        .filter((p) => p.category === "Argolas")
+        .reduce((sum, p) => sum + p.quantity, 0),
+      Fivelas: products
+        .filter((p) => p.category === "Fivelas")
+        .reduce((sum, p) => sum + p.quantity, 0),
+      Bombinhas: products
+        .filter((p) => p.category === "Bombinhas")
+        .reduce((sum, p) => sum + p.quantity, 0),
+    }),
+    [products],
+  );
 
   const stats = {
     rings: {
@@ -357,6 +391,7 @@ export default function Home({ isFormOpen = false }: HomeProps) {
         <StockDialog
           category={selectedCategoryForStock}
           currentStock={categoryStocks[selectedCategoryForStock] || 0}
+          currentQuantity={categoryQuantities[selectedCategoryForStock] || 0}
           isOpen={!!selectedCategoryForStock}
           onClose={() => setSelectedCategoryForStock(null)}
           onUpdate={handleUpdateStock}

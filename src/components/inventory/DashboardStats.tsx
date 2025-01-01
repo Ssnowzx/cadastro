@@ -11,6 +11,7 @@ interface StatCardProps {
   isCurrency?: boolean;
   onUpdateStock?: () => void;
   showStockButton?: boolean;
+  showStock?: boolean;
 }
 
 const StatCard = ({
@@ -21,6 +22,7 @@ const StatCard = ({
   isCurrency = false,
   onUpdateStock,
   showStockButton = false,
+  showStock = true,
 }: StatCardProps) => {
   const displayValue = isCurrency
     ? Number(value).toLocaleString("pt-BR", {
@@ -50,26 +52,34 @@ const StatCard = ({
         )}
       </div>
       <div className="mt-4 space-y-1">
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            Quantidade:
-          </span>
-          <span className="text-lg font-bold">{displayValue}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            Estoque:
-          </span>
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold">{stock}</span>
-            {stock === 0 && (
-              <AlertTriangle
-                className="h-5 w-5 text-red-500"
-                title="Estoque zerado"
-              />
-            )}
+        {showStock ? (
+          <>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Quantidade:
+              </span>
+              <span className="text-lg font-bold">{displayValue}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Estoque:
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-bold">{stock}</span>
+                {stock === 0 && (
+                  <AlertTriangle
+                    className="h-5 w-5 text-red-500"
+                    title="Estoque zerado"
+                  />
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex justify-between items-center">
+            <span className="text-lg font-bold">{displayValue}</span>
           </div>
-        </div>
+        )}
       </div>
     </Card>
   );
@@ -128,6 +138,7 @@ const DashboardStats = ({
           value={stats.totalValue}
           icon={<DollarSign className="h-4 w-4 text-green-500" />}
           isCurrency={true}
+          showStock={false}
         />
       </div>
     </div>
