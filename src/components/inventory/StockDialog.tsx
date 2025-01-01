@@ -3,26 +3,28 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { Product } from "@/lib/types";
+import { ProductCategory } from "@/lib/types";
 
 interface StockDialogProps {
-  product: Product;
+  category: ProductCategory;
+  currentStock: number;
   isOpen: boolean;
   onClose: () => void;
-  onUpdate: (product: Product, newStock: number) => void;
+  onUpdate: (category: ProductCategory, newStock: number) => void;
 }
 
 export function StockDialog({
-  product,
+  category,
+  currentStock,
   isOpen,
   onClose,
   onUpdate,
 }: StockDialogProps) {
-  const [newStock, setNewStock] = useState(product.stock?.toString() || "0");
+  const [newStock, setNewStock] = useState(currentStock.toString());
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdate(product, parseInt(newStock));
+    onUpdate(category, parseInt(newStock));
     onClose();
   };
 
@@ -34,10 +36,8 @@ export function StockDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Produto</Label>
-            <div className="text-sm text-gray-500">
-              {product.category} - {product.fields.numero}
-            </div>
+            <Label>Categoria</Label>
+            <div className="text-sm text-gray-500">{category}</div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="stock">Quantidade em Estoque</Label>

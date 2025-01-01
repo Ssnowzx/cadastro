@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 import { Plus, Moon, Sun } from "lucide-react";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { useTheme } from "@/lib/theme-provider";
-import { Product, ProductFormData } from "@/lib/types";
+import { Product, ProductFormData, ProductCategory } from "@/lib/types";
 import { Input } from "./ui/input";
 import { StockDialog } from "./inventory/StockDialog";
 import {
@@ -15,6 +15,9 @@ import {
   addProduct,
   updateProduct,
   deleteProduct,
+  fetchCategoryStocks,
+  updateCategoryStock,
+  getCategoryStock,
 } from "@/lib/queries";
 import { useToast } from "./ui/use-toast";
 
@@ -34,25 +37,40 @@ export default function Home({ isFormOpen = false }: HomeProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedProductForStock, setSelectedProductForStock] =
-    useState<Product | null>(null);
+  const [selectedCategoryForStock, setSelectedCategoryForStock] =
+    useState<ProductCategory | null>(null);
+  const [categoryStocks, setCategoryStocks] = useState<{
+    [key: string]: number;
+  }>({});
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    loadProducts();
+    loadInitialData();
   }, []);
 
-  const loadProducts = async () => {
+  const loadInitialData = async () => {
     try {
-      const data = await fetchProducts();
-      setProducts(data);
-      setFilteredProducts(data);
+      const [productsData, stocksData] = await Promise.all([
+        fetchProducts(),
+        fetchCategoryStocks(),
+      ]);
+      setProducts(productsData);
+      setFilteredProducts(productsData);
+
+      const stocksMap = stocksData.reduce(
+        (acc, stock) => {
+          acc[stock.category] = stock.stock;
+          return acc;
+        },
+        {} as { [key: string]: number },
+      );
+      setCategoryStocks(stocksMap);
     } catch (error) {
-      console.error("Error loading products:", error);
+      console.error("Error loading initial data:", error);
       toast({
         variant: "destructive",
         title: "Erro",
-        description: "Erro ao carregar produtos",
+        description: "Erro ao carregar dados",
       });
     } finally {
       setIsLoading(false);
@@ -73,13 +91,23 @@ export default function Home({ isFormOpen = false }: HomeProps) {
 
   const handleAddProduct = async (productData: ProductFormData) => {
     try {
+      const currentStock = await getCategoryStock(productData.category);
+
+      if (currentStock < productData.quantity) {
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: `Estoque insuficiente para categoria ${productData.category}. Estoque atual: ${currentStock}`,
+        });
+        return;
+      }
+
       if (editingProduct) {
         const updatedProduct = await updateProduct({
           ...editingProduct,
           category: productData.category,
           fields: productData.fields,
           quantity: productData.quantity,
-          stock: editingProduct.stock,
         });
         setProducts(
           products.map((p) =>
@@ -101,13 +129,14 @@ export default function Home({ isFormOpen = false }: HomeProps) {
 
       setEditingProduct(null);
       setIsFormDialogOpen(false);
-      await loadProducts();
+      await loadInitialData();
     } catch (error) {
       console.error("Error saving product:", error);
       toast({
         variant: "destructive",
         title: "Erro",
-        description: "Erro ao salvar produto",
+        description:
+          error instanceof Error ? error.message : "Erro ao salvar produto",
       });
     }
   };
@@ -125,7 +154,7 @@ export default function Home({ isFormOpen = false }: HomeProps) {
         title: "Sucesso",
         description: "Produto excluído com sucesso",
       });
-      await loadProducts();
+      await loadInitialData();
     } catch (error) {
       console.error("Error deleting product:", error);
       toast({
@@ -136,20 +165,17 @@ export default function Home({ isFormOpen = false }: HomeProps) {
     }
   };
 
-  const handleUpdateStock = async (product: Product, newStock: number) => {
+  const handleUpdateStock = async (
+    category: ProductCategory,
+    newStock: number,
+  ) => {
     try {
-      const updatedProduct = await updateProduct({
-        ...product,
-        stock: newStock,
-      });
-      setProducts(
-        products.map((p) => (p.id === product.id ? updatedProduct : p)),
-      );
+      await updateCategoryStock(category, newStock);
+      await loadInitialData();
       toast({
         title: "Sucesso",
         description: "Estoque atualizado com sucesso",
       });
-      await loadProducts();
     } catch (error) {
       console.error("Error updating stock:", error);
       toast({
@@ -161,10 +187,7 @@ export default function Home({ isFormOpen = false }: HomeProps) {
   };
 
   const handleCategoryStockUpdate = (category: string) => {
-    const product = products.find((p) => p.category === category);
-    if (product) {
-      setSelectedProductForStock(product);
-    }
+    setSelectedCategoryForStock(category as ProductCategory);
   };
 
   const handleSearch = (term: string) => {
@@ -204,25 +227,19 @@ export default function Home({ isFormOpen = false }: HomeProps) {
       quantity: products
         .filter((p) => p.category === "Argolas")
         .reduce((sum, p) => sum + p.quantity, 0),
-      stock: products
-        .filter((p) => p.category === "Argolas")
-        .reduce((sum, p) => sum + (p.stock || 0), 0),
+      stock: categoryStocks["Argolas"] || 0,
     },
     buckles: {
       quantity: products
         .filter((p) => p.category === "Fivelas")
         .reduce((sum, p) => sum + p.quantity, 0),
-      stock: products
-        .filter((p) => p.category === "Fivelas")
-        .reduce((sum, p) => sum + (p.stock || 0), 0),
+      stock: categoryStocks["Fivelas"] || 0,
     },
     pumps: {
       quantity: products
         .filter((p) => p.category === "Bombinhas")
         .reduce((sum, p) => sum + p.quantity, 0),
-      stock: products
-        .filter((p) => p.category === "Bombinhas")
-        .reduce((sum, p) => sum + (p.stock || 0), 0),
+      stock: categoryStocks["Bombinhas"] || 0,
     },
     totalValue: products.reduce(
       (sum, p) => sum + p.fields.valor * p.quantity,
@@ -336,11 +353,12 @@ export default function Home({ isFormOpen = false }: HomeProps) {
         />
       </div>
 
-      {selectedProductForStock && (
+      {selectedCategoryForStock && (
         <StockDialog
-          product={selectedProductForStock}
-          isOpen={!!selectedProductForStock}
-          onClose={() => setSelectedProductForStock(null)}
+          category={selectedCategoryForStock}
+          currentStock={categoryStocks[selectedCategoryForStock] || 0}
+          isOpen={!!selectedCategoryForStock}
+          onClose={() => setSelectedCategoryForStock(null)}
           onUpdate={handleUpdateStock}
         />
       )}

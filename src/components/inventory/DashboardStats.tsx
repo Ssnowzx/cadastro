@@ -1,6 +1,6 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { Package, DollarSign } from "lucide-react";
+import { Package, DollarSign, AlertTriangle } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface StatCardProps {
@@ -16,7 +16,7 @@ interface StatCardProps {
 const StatCard = ({
   title = "Stat",
   value = 0,
-  stock,
+  stock = 0,
   icon = <Package className="h-4 w-4" />,
   isCurrency = false,
   onUpdateStock,
@@ -56,14 +56,20 @@ const StatCard = ({
           </span>
           <span className="text-lg font-bold">{displayValue}</span>
         </div>
-        {typeof stock !== "undefined" && (
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Estoque:
-            </span>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Estoque:
+          </span>
+          <div className="flex items-center gap-2">
             <span className="text-lg font-bold">{stock}</span>
+            {stock === 0 && (
+              <AlertTriangle
+                className="h-5 w-5 text-red-500"
+                title="Estoque zerado"
+              />
+            )}
           </div>
-        )}
+        </div>
       </div>
     </Card>
   );

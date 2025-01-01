@@ -16,8 +16,12 @@ export interface Product {
   category: ProductCategory;
   fields: ProductFields;
   quantity: number;
-  stock: number;
   created_at?: string;
+}
+
+export interface CategoryStock {
+  category: ProductCategory;
+  stock: number;
 }
 
 export interface ProductFormData {
