@@ -20,20 +20,18 @@ export interface Product {
   created_at?: string;
 }
 
-export interface NewProductFields {
-  numero: string;
-  medida: string;
-  polegada: string;
-  modelo: string;
-  grossura: string;
-  compFuro: string;
-  furo: string;
-  valor: number;
-}
-
-export interface NewProduct {
+export interface ProductFormData {
   category: ProductCategory;
-  fields: NewProductFields;
+  fields: {
+    numero: string;
+    medida: string;
+    polegada: string;
+    modelo: string;
+    grossura: string;
+    compFuro: string;
+    furo: string;
+    valor: number;
+  };
   quantity: number;
 }
 

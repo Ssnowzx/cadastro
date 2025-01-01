@@ -1,4 +1,4 @@
-import { Product, ProductCategory, NewProduct } from "./types";
+import { Product, ProductCategory, ProductFormData } from "./types";
 
 // Helper to generate unique IDs
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -23,22 +23,24 @@ export async function fetchProducts() {
   return loadFromStorage();
 }
 
-export async function addProduct(product: NewProduct): Promise<Product> {
+export async function addProduct(
+  productData: ProductFormData,
+): Promise<Product> {
   const products = loadFromStorage();
   const newProduct: Product = {
     id: generateId(),
-    category: product.category,
+    category: productData.category,
     fields: {
-      numero: product.fields.numero || "",
-      medida: product.fields.medida || "",
-      polegada: product.fields.polegada || "",
-      modelo: product.fields.modelo || "",
-      grossura: product.fields.grossura || "",
-      compFuro: product.fields.compFuro || "",
-      furo: product.fields.furo || "",
-      valor: product.fields.valor,
+      numero: productData.fields.numero,
+      medida: productData.fields.medida,
+      polegada: productData.fields.polegada,
+      modelo: productData.fields.modelo,
+      grossura: productData.fields.grossura,
+      compFuro: productData.fields.compFuro,
+      furo: productData.fields.furo,
+      valor: productData.fields.valor,
     },
-    quantity: product.quantity,
+    quantity: productData.quantity,
     stock: 0,
     created_at: new Date().toISOString(),
   };
@@ -56,13 +58,13 @@ export async function updateProduct(product: Product): Promise<Product> {
     const updatedProduct: Product = {
       ...product,
       fields: {
-        numero: product.fields.numero || "",
-        medida: product.fields.medida || "",
-        polegada: product.fields.polegada || "",
-        modelo: product.fields.modelo || "",
-        grossura: product.fields.grossura || "",
-        compFuro: product.fields.compFuro || "",
-        furo: product.fields.furo || "",
+        numero: product.fields.numero,
+        medida: product.fields.medida,
+        polegada: product.fields.polegada,
+        modelo: product.fields.modelo,
+        grossura: product.fields.grossura,
+        compFuro: product.fields.compFuro,
+        furo: product.fields.furo,
         valor: product.fields.valor,
       },
       stock: typeof product.stock === "number" ? product.stock : 0,

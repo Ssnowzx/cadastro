@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 import { Plus, Moon, Sun } from "lucide-react";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { useTheme } from "@/lib/theme-provider";
-import { Product, NewProduct } from "@/lib/types";
+import { Product, ProductFormData } from "@/lib/types";
 import { Input } from "./ui/input";
 import { StockDialog } from "./inventory/StockDialog";
 import {
@@ -71,29 +71,15 @@ export default function Home({ isFormOpen = false }: HomeProps) {
     setIsAdmin(false);
   };
 
-  const handleAddProduct = async (productData: any) => {
+  const handleAddProduct = async (productData: ProductFormData) => {
     try {
-      const newProduct: NewProduct = {
-        category: productData.category,
-        fields: {
-          numero: productData.fields.numero || "",
-          medida: productData.fields.medida || "",
-          polegada: productData.fields.polegada || "",
-          modelo: productData.fields.modelo || "",
-          grossura: productData.fields.grossura || "",
-          compFuro: productData.fields.compFuro || "",
-          furo: productData.fields.furo || "",
-          valor: productData.fields.valor,
-        },
-        quantity: productData.quantity,
-      };
-
       if (editingProduct) {
         const updatedProduct = await updateProduct({
           ...editingProduct,
-          category: newProduct.category,
-          fields: newProduct.fields,
-          quantity: newProduct.quantity,
+          category: productData.category,
+          fields: productData.fields,
+          quantity: productData.quantity,
+          stock: editingProduct.stock,
         });
         setProducts(
           products.map((p) =>
@@ -105,7 +91,7 @@ export default function Home({ isFormOpen = false }: HomeProps) {
           description: "Produto atualizado com sucesso",
         });
       } else {
-        const addedProduct = await addProduct(newProduct);
+        const addedProduct = await addProduct(productData);
         setProducts([...products, addedProduct]);
         toast({
           title: "Sucesso",
