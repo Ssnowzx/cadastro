@@ -1,140 +1,102 @@
-import {
-  Product,
-  ProductCategory,
-  ProductFormData,
-  CategoryStock,
-} from "./types";
+import { Product, ProductCategory, ProductFormData } from "./types";
+import { supabase } from "./supabase";
 
-// Helper to generate unique IDs
-const generateId = () => Math.random().toString(36).substr(2, 9);
+export async function fetchProducts(): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-// Load products from localStorage
-const loadFromStorage = (): Product[] => {
-  const stored = localStorage.getItem("products");
-  if (!stored) {
-    localStorage.setItem("products", JSON.stringify([]));
-    return [];
-  }
-  return JSON.parse(stored);
-};
-
-// Load category stocks from localStorage
-const loadStocksFromStorage = (): CategoryStock[] => {
-  const stored = localStorage.getItem("categoryStocks");
-  if (!stored) {
-    const initialStocks: CategoryStock[] = [
-      { category: "Argolas", stock: 0 },
-      { category: "Fivelas", stock: 0 },
-      { category: "Bombinhas", stock: 0 },
-    ];
-    localStorage.setItem("categoryStocks", JSON.stringify(initialStocks));
-    return initialStocks;
-  }
-  return JSON.parse(stored);
-};
-
-// Save products to localStorage
-const saveToStorage = (products: Product[]) => {
-  localStorage.setItem("products", JSON.stringify(products));
-};
-
-// Save category stocks to localStorage
-const saveStocksToStorage = (stocks: CategoryStock[]) => {
-  localStorage.setItem("categoryStocks", JSON.stringify(stocks));
-};
-
-export async function fetchProducts() {
-  return loadFromStorage();
+  if (error) throw new Error("Erro ao carregar produtos");
+  return data || [];
 }
 
-export async function fetchCategoryStocks() {
-  return loadStocksFromStorage();
+export async function fetchCategoryStocks(): Promise<any[]> {
+  const { data, error } = await supabase
+    .from("category_stocks")
+    .select("category,stock");
+
+  if (error) throw new Error("Erro ao carregar estoques");
+  return data || [];
 }
 
 export async function updateCategoryStock(
   category: ProductCategory,
   newStock: number,
-) {
-  const stocks = loadStocksFromStorage();
-  const updatedStocks = stocks.map((stock) =>
-    stock.category === category ? { ...stock, stock: newStock } : stock,
-  );
-  saveStocksToStorage(updatedStocks);
-  return updatedStocks;
+): Promise<void> {
+  const { error } = await supabase
+    .from("category_stocks")
+    .update({ stock: newStock })
+    .eq("category", category);
+
+  if (error) throw new Error("Erro ao atualizar estoque");
 }
 
 export async function getCategoryStock(
   category: ProductCategory,
 ): Promise<number> {
-  const stocks = loadStocksFromStorage();
-  const categoryStock = stocks.find((stock) => stock.category === category);
-  return categoryStock?.stock || 0;
+  const { data, error } = await supabase
+    .from("category_stocks")
+    .select("stock")
+    .eq("category", category)
+    .single();
+
+  if (error) {
+    // Se não encontrar, retorna o estoque padrão
+    if (error.code === "PGRST116") return 1000;
+    throw new Error("Erro ao obter estoque");
+  }
+  return data?.stock || 0;
 }
 
 export async function addProduct(
   productData: ProductFormData,
 ): Promise<Product> {
+  // Primeiro verifica o estoque
   const currentStock = await getCategoryStock(productData.category);
-
   if (currentStock < productData.quantity) {
-    throw new Error("Estoque insuficiente para adicionar este produto");
+    throw new Error(`Estoque insuficiente. Disponível: ${currentStock}`);
   }
 
-  const products = loadFromStorage();
-  const newProduct: Product = {
-    id: generateId(),
-    category: productData.category,
-    fields: {
-      numero: productData.fields.numero,
-      medida: productData.fields.medida,
-      polegada: productData.fields.polegada,
-      modelo: productData.fields.modelo,
-      grossura: productData.fields.grossura,
-      compFuro: productData.fields.compFuro,
-      furo: productData.fields.furo,
-      valor: productData.fields.valor,
-    },
-    quantity: productData.quantity,
-    created_at: new Date().toISOString(),
-  };
+  // Adiciona o produto
+  const { data, error } = await supabase
+    .from("products")
+    .insert({
+      category: productData.category,
+      fields: productData.fields,
+      quantity: productData.quantity,
+    })
+    .select()
+    .single();
 
-  // Update stock
+  if (error) throw new Error("Erro ao adicionar produto");
+
+  // Atualiza o estoque
   await updateCategoryStock(
     productData.category,
     currentStock - productData.quantity,
   );
 
-  products.push(newProduct);
-  saveToStorage(products);
-  return newProduct;
+  return data;
 }
 
 export async function updateProduct(product: Product): Promise<Product> {
-  const products = loadFromStorage();
-  const index = products.findIndex((p) => p.id === product.id);
+  const { data, error } = await supabase
+    .from("products")
+    .update({
+      category: product.category,
+      fields: product.fields,
+      quantity: product.quantity,
+    })
+    .eq("id", product.id)
+    .select()
+    .single();
 
-  if (index !== -1) {
-    products[index] = product;
-    saveToStorage(products);
-    return product;
-  }
-
-  throw new Error("Product not found");
+  if (error) throw new Error("Erro ao atualizar produto");
+  return data;
 }
 
-export async function deleteProduct(id: string) {
-  const products = loadFromStorage();
-  const product = products.find((p) => p.id === id);
-
-  if (product) {
-    // Return the quantity to stock when deleting
-    const currentStock = await getCategoryStock(product.category);
-    await updateCategoryStock(
-      product.category,
-      currentStock + product.quantity,
-    );
-  }
-
-  const filtered = products.filter((p) => p.id !== id);
-  saveToStorage(filtered);
+export async function deleteProduct(id: string): Promise<void> {
+  const { error } = await supabase.from("products").delete().eq("id", id);
+  if (error) throw new Error("Erro ao excluir produto");
 }

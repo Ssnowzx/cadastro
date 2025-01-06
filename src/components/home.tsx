@@ -19,6 +19,7 @@ import {
   updateCategoryStock,
   getCategoryStock,
 } from "@/lib/queries";
+import { signIn, signOut, checkIsAdmin } from "@/lib/auth";
 import { useToast } from "./ui/use-toast";
 
 interface HomeProps {
@@ -46,7 +47,17 @@ export default function Home({ isFormOpen = false }: HomeProps) {
 
   useEffect(() => {
     loadInitialData();
+    checkInitialAuth();
   }, []);
+
+  const checkInitialAuth = async () => {
+    try {
+      const isUserAdmin = await checkIsAdmin();
+      setIsAdmin(isUserAdmin);
+    } catch (error) {
+      console.error("Error checking auth:", error);
+    }
+  };
 
   const loadInitialData = async () => {
     try {
@@ -77,16 +88,41 @@ export default function Home({ isFormOpen = false }: HomeProps) {
     }
   };
 
-  const handleLogin = () => {
-    if (password === "adm123") {
+  const handleLogin = async () => {
+    try {
+      await signIn(password);
       setIsAdmin(true);
       setShowLoginForm(false);
       setPassword("");
+      toast({
+        title: "Sucesso",
+        description: "Login realizado com sucesso",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description:
+          error instanceof Error ? error.message : "Erro ao fazer login",
+      });
     }
   };
 
-  const handleLogout = () => {
-    setIsAdmin(false);
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setIsAdmin(false);
+      toast({
+        title: "Sucesso",
+        description: "Logout realizado com sucesso",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Erro ao fazer logout",
+      });
+    }
   };
 
   const handleAddProduct = async (productData: ProductFormData) => {
@@ -103,7 +139,6 @@ export default function Home({ isFormOpen = false }: HomeProps) {
       }
 
       if (editingProduct) {
-        // Calculate stock difference for editing
         const stockDifference = productData.quantity - editingProduct.quantity;
         if (currentStock < stockDifference) {
           toast({
