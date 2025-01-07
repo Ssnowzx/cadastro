@@ -1,9 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Use valores diretos em vez de variáveis de ambiente
-const supabaseUrl = "https://hcskkfedldemllhpvnhq.supabase.co";
+// Usar as credenciais corretas do novo projeto
+const supabaseUrl = "https://zlpceepwdhdrpvdvitol.supabase.co";
 const supabaseAnonKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhjc2trZmVkbGRlbWxsaHB2bmhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUyNDIxODcsImV4cCI6MjA1MDgxODE4N30.GX3BMw6yZrToyqIg5w4JWbrTtWBgKm3Aweo7a3lNU-A";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpscGNlZXB3ZGhkcnB2ZHZpdG9sIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNTE4NzI3OSwiZXhwIjoyMDUwNzYzMjc5fQ.pO3dXqn_D7NILuqnFA0P58LcBQzmDn55qFjkJ6CtRGk";
 
 console.log("Initializing Supabase with URL:", supabaseUrl);
 
