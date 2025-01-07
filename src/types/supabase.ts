@@ -24,6 +24,27 @@ export type Database = {
         }
         Relationships: []
       }
+      category_stocks: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: string
+          stock: number
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: string
+          stock?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: string
+          stock?: number
+        }
+        Relationships: []
+      }
       "created_at (timestamp with time zone)": {
         Row: {
           created_at: string
@@ -66,6 +87,30 @@ export type Database = {
         Update: {
           created_at?: string
           id?: number
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category: string
+          created_at: string | null
+          fields: Json
+          id: string
+          quantity: number
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          fields: Json
+          id?: string
+          quantity?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          fields?: Json
+          id?: string
+          quantity?: number
         }
         Relationships: []
       }
