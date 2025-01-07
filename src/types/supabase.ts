@@ -27,20 +27,14 @@ export type Database = {
       category_stocks: {
         Row: {
           category: string
-          created_at: string | null
-          id: string
           stock: number
         }
         Insert: {
           category: string
-          created_at?: string | null
-          id?: string
           stock?: number
         }
         Update: {
           category?: string
-          created_at?: string | null
-          id?: string
           stock?: number
         }
         Relationships: []
